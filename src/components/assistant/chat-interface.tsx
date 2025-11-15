@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useData } from '@/contexts/data-context';
-import { Loader2, MessageCircle, Send } from 'lucide-react';
+import { Loader2, MessageCircle, Send, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Card3D from '../shared/card-3d';
@@ -10,10 +10,12 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '../ui/scroll-area';
 
 export default function ChatInterface() {
-  const { chatHistory, askAiAssistant } = useData();
+  const { chatHistory, askAiAssistant, getAudioForText } = useData();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -39,8 +41,27 @@ export default function ChatInterface() {
     }
   };
 
+  const handlePlayAudio = async (text: string, id: string) => {
+    if (playingAudio === id) {
+      audioRef.current?.pause();
+      setPlayingAudio(null);
+      return;
+    }
+  
+    setPlayingAudio(id);
+    const audioSrc = await getAudioForText(text);
+    if (audioSrc && audioRef.current) {
+      audioRef.current.src = audioSrc;
+      audioRef.current.play();
+      audioRef.current.onended = () => setPlayingAudio(null);
+    } else {
+      setPlayingAudio(null);
+    }
+  };
+
   return (
     <Card3D>
+       <audio ref={audioRef} />
       <div className="h-[calc(100vh-10rem)] min-h-[500px] rounded-2xl border border-border bg-card/80 p-6 shadow-lg backdrop-blur-xl flex flex-col">
         <h3 className="mb-6 flex items-center gap-2 text-xl font-bold">
           <MessageCircle className="h-6 w-6 text-primary" />
@@ -57,8 +78,18 @@ export default function ChatInterface() {
             ) : (
               chatHistory.map((msg, i) => (
                 <div key={i} className={cn('flex', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
-                  <div className={cn('max-w-[85%] rounded-2xl p-4 break-words', msg.role === 'user' ? 'rounded-br-none bg-primary text-primary-foreground' : 'rounded-tl-none bg-secondary')}>
+                  <div className={cn('max-w-[85%] rounded-2xl p-4 break-words group relative', msg.role === 'user' ? 'rounded-br-none bg-primary text-primary-foreground' : 'rounded-tl-none bg-secondary')}>
                     <p className="text-sm" dangerouslySetInnerHTML={{ __html: msg.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                    {msg.role === 'assistant' && (
+                       <Button
+                       size="icon"
+                       variant="ghost"
+                       className="absolute -right-10 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                       onClick={() => handlePlayAudio(msg.content, `msg-${i}`)}
+                     >
+                        <Volume2 className="h-4 w-4" />
+                     </Button>
+                    )}
                   </div>
                 </div>
               ))

@@ -10,6 +10,7 @@ export interface Transaction {
   description: string;
   category: string;
   timestamp: number;
+  paymentMethod: string;
 }
 
 export interface Budget {

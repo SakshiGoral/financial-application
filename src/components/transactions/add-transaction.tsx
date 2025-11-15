@@ -20,9 +20,12 @@ const transactionSchema = z.object({
   amount: z.coerce.number().positive({ message: 'Amount must be positive.' }),
   description: z.string().min(3, { message: 'Description must be at least 3 characters.' }),
   category: z.string().min(1, { message: 'Please select a category.' }),
+  paymentMethod: z.string().min(1, { message: 'Please select a payment method.' }),
 });
 
 type TransactionFormValues = z.infer<typeof transactionSchema>;
+
+const paymentMethods = ['Cash', 'Credit Card', 'Debit Card', 'Online Transfer', 'Other'];
 
 export default function AddTransaction({ addTransaction }: { addTransaction: (data: any) => void }) {
   const [showForm, setShowForm] = useState(false);
@@ -37,6 +40,7 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
       amount: undefined,
       description: '',
       category: '',
+      paymentMethod: '',
     },
   });
 
@@ -130,30 +134,51 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
                 </FormItem>
               )} />
               
-              <FormField control={form.control} name="category" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {CATEGORIES.map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {c}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField control={form.control} name="category" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CATEGORIES.map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {c}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="paymentMethod" render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Payment Method</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a payment method" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                        {paymentMethods.map((m) => (
+                            <SelectItem key={m} value={m}>{m}</SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    </FormItem>
+                )} />
+              </div>
 
               {suggestions.length > 0 && (
                 <div>
-                    <FormLabel className="text-sm">Suggestions</FormLabel>
+                    <FormLabel className="text-sm">Category Suggestions</FormLabel>
                     <div className="flex flex-wrap gap-2 pt-2">
                         {suggestions.map(s => (
                             <Button key={s} type="button" variant="outline" size="sm" onClick={() => form.setValue('category', s)}>

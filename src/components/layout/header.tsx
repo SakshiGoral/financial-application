@@ -1,8 +1,6 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Button } from '../ui/button';
-import { Menu } from 'lucide-react';
 
 const pageTitles: { [key: string]: string } = {
   '/dashboard': 'Dashboard',
@@ -10,6 +8,8 @@ const pageTitles: { [key: string]: string } = {
   '/budgets': 'Budgets',
   '/goals': 'Savings Goals',
   '/assistant': 'AI Assistant',
+  '/reports': 'Reports',
+  '/settings': 'Settings',
 };
 
 export default function Header() {

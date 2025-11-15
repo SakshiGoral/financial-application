@@ -15,6 +15,9 @@ import {
   SuggestTransactionCategoriesInput,
   SuggestTransactionCategoriesOutput,
 } from '@/ai/flows/suggest-transaction-categories';
+import {
+    textToSpeech as textToSpeechFlow,
+} from '@/ai/flows/text-to-speech';
 
 export async function answerFinancialQuestions(
   input: AnswerFinancialQuestionsInput
@@ -33,4 +36,8 @@ export async function suggestTransactionCategories(
   input: SuggestTransactionCategoriesInput
 ): Promise<SuggestTransactionCategoriesOutput> {
   return await suggestTransactionCategoriesFlow(input);
+}
+
+export async function textToSpeech(text: string): Promise<{media: string}> {
+    return await textToSpeechFlow(text);
 }

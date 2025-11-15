@@ -8,6 +8,7 @@ import {
   answerFinancialQuestions,
   provideAutomatedBudgetAdvice,
   suggestTransactionCategories,
+  textToSpeech,
 } from '@/app/actions';
 
 interface DataContextType {
@@ -37,6 +38,7 @@ interface DataContextType {
   askAiAssistant: (question: string) => Promise<void>;
   getBudgetAdvice: () => Promise<string | null>;
   getCategorySuggestions: (description: string) => Promise<string[]>;
+  getAudioForText: (text: string) => Promise<string | null>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -158,6 +160,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const getAudioForText = async (text: string): Promise<string | null> => {
+    try {
+        const { media } = await textToSpeech(text);
+        return media;
+    } catch(e) {
+        console.error(e);
+        toast({ title: "Audio Error", description: "Could not generate audio.", variant: 'destructive' });
+        return null;
+    }
+  }
+
 
   const value = {
     transactions,
@@ -174,7 +187,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     updateGoal,
     askAiAssistant,
     getBudgetAdvice,
-    getCategorySuggestions
+    getCategorySuggestions,
+    getAudioForText,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
