@@ -20,11 +20,13 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import Card3D from '@/components/shared/card-3d';
-import { UserCircle, Trash2, Loader2 } from 'lucide-react';
+import { UserCircle, Trash2, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  avatar: z.string().url({ message: 'Please enter a valid URL.' }).optional().or(z.literal('')),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -38,12 +40,13 @@ export default function SettingsPage() {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: user?.name || '',
+      avatar: user?.avatar || '',
     },
   });
 
   function onProfileSubmit(data: ProfileFormValues) {
     if (user?.email) {
-      updateUser(user.email, { name: data.name });
+      updateUser(user.email, { name: data.name, avatar: data.avatar });
       toast({ title: 'Profile updated successfully!' });
     }
   }
@@ -62,22 +65,46 @@ export default function SettingsPage() {
             Profile Settings
           </h3>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onProfileSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Your name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <form onSubmit={form.handleSubmit(onProfileSubmit)} className="space-y-6">
+              <div className="flex items-center gap-6">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={form.watch('avatar') || user?.avatar} alt={user?.name} />
+                  <AvatarFallback className="text-3xl">
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Your name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="avatar"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Avatar URL</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://example.com/avatar.png" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
                <div className="flex items-center gap-4">
-                <Input type="email" value={user?.email || ''} disabled />
+                <Input type="email" value={user?.email || ''} disabled className="flex-1" />
                 <Button type="submit" disabled={form.formState.isSubmitting} className="font-bold">
                     {form.formState.isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
                 </Button>

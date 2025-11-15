@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 
 const navItems = [
@@ -62,9 +63,12 @@ export default function Sidebar() {
       </nav>
       <div className="mt-auto border-t border-border p-4">
         <div className="mb-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center font-bold text-primary-foreground">
-                {user?.name.charAt(0).toUpperCase()}
-            </div>
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={user?.avatar} alt={user?.name} />
+              <AvatarFallback>
+                {user?.name?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
             <div>
                 <p className="font-semibold">{user?.name}</p>
                 <p className="text-xs text-muted-foreground truncate max-w-[150px]">{user?.email}</p>

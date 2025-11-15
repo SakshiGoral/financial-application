@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (users[email]) {
       return false;
     }
-    const newUsers = { ...users, [email]: { name, email, password: pass } };
+    const newUsers = { ...users, [email]: { name, email, password: pass, avatar: '' } };
     setUsers(newUsers);
     setCurrentUserEmail(email);
     toast({ title: "Account created successfully!" });
