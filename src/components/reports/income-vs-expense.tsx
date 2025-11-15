@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import { format, subMonths } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
 import { TrendingUp } from 'lucide-react';
+import { useTheme } from '@/contexts/theme-context';
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -26,6 +27,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function IncomeVsExpense() {
   const { transactions } = useData();
+  const { theme } = useTheme();
 
   const data = useMemo(() => {
     const monthlyData: { [key: string]: { income: number; expense: number } } = {};
@@ -71,7 +73,7 @@ export default function IncomeVsExpense() {
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
         <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
         <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${formatCurrency(value)}`} />
-        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--secondary))' }}/>
+        <Tooltip content={<CustomTooltip />} cursor={{ fill: theme === 'dark' ? 'hsl(var(--secondary))' : 'hsl(var(--muted))' }}/>
         <Legend iconType="circle" iconSize={10} formatter={(value) => <span className="text-foreground">{value}</span>} />
         <Bar dataKey="income" fill="hsl(var(--chart-2))" name="Income" radius={[4, 4, 0, 0]} />
         <Bar dataKey="expense" fill="hsl(var(--chart-4))" name="Expense" radius={[4, 4, 0, 0]} />

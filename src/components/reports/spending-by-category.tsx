@@ -5,8 +5,9 @@ import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip, 
 import { useMemo } from 'react';
 import { formatCurrency } from '@/lib/utils';
 import { Wallet } from 'lucide-react';
+import { useTheme } from '@/contexts/theme-context';
 
-const COLORS = [
+const COLORS_DARK = [
   'hsl(var(--chart-1))',
   'hsl(var(--chart-2))',
   'hsl(var(--chart-3))',
@@ -14,6 +15,16 @@ const COLORS = [
   'hsl(var(--chart-5))',
   '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'
 ];
+
+const COLORS_LIGHT = [
+  'hsl(242, 76%, 58%)',
+  'hsl(172, 63%, 50%)',
+  'hsl(38, 92%, 50%)',
+  'hsl(0, 84%, 60%)',
+  'hsl(320, 84%, 60%)',
+  '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'
+];
+
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
@@ -43,6 +54,8 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 export default function SpendingByCategory() {
   const { transactions } = useData();
+  const { theme } = useTheme();
+  const COLORS = theme === 'dark' ? COLORS_DARK : COLORS_LIGHT;
 
   const data = useMemo(() => {
     const today = new Date();

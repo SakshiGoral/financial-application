@@ -20,9 +20,11 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import Card3D from '@/components/shared/card-3d';
-import { UserCircle, Trash2, Loader2, Image as ImageIcon } from 'lucide-react';
+import { UserCircle, Trash2, Loader2, Palette } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useTheme } from '@/contexts/theme-context';
+import { Switch } from '@/components/ui/switch';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -35,6 +37,7 @@ export default function SettingsPage() {
   const { user, updateUser } = useAuth();
   const { clearAllData } = useData();
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -111,6 +114,27 @@ export default function SettingsPage() {
                </div>
             </form>
           </Form>
+        </div>
+      </Card3D>
+      
+      <Card3D>
+        <div className="rounded-2xl border border-border bg-card/80 p-6 shadow-lg backdrop-blur-xl">
+          <h3 className="mb-6 flex items-center gap-2 text-xl font-bold">
+            <Palette className="h-6 w-6 text-primary" />
+            Appearance
+          </h3>
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div>
+              <h4 className="font-semibold">Theme</h4>
+              <p className="text-sm text-muted-foreground">
+                Switch between light and dark mode.
+              </p>
+            </div>
+            <Switch
+              checked={theme === 'dark'}
+              onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+            />
+          </div>
         </div>
       </Card3D>
 
