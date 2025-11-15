@@ -1,1 +1,6 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/provide-automated-budget-advice.ts';
+import '@/ai/flows/suggest-transaction-categories.ts';
+import '@/ai/flows/answer-financial-questions.ts';
