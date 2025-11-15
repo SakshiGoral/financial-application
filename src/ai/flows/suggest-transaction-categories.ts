@@ -12,7 +12,8 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const SuggestTransactionCategoriesInputSchema = z.object({
-  description: z.string().describe('The description of the transaction.'),
+  description: z.string().optional().describe('The description of the transaction.'),
+  pythonMode: z.boolean().optional().describe('If true, the output will include a Python list of categories.'),
 });
 export type SuggestTransactionCategoriesInput = z.infer<typeof SuggestTransactionCategoriesInputSchema>;
 
@@ -20,6 +21,7 @@ const SuggestTransactionCategoriesOutputSchema = z.object({
   categories: z
     .array(z.string())
     .describe('An array of suggested categories for the transaction.'),
+    pythonCategories: z.string().optional().describe('A Python list of the suggested categories as a string.'),
 });
 export type SuggestTransactionCategoriesOutput = z.infer<typeof SuggestTransactionCategoriesOutputSchema>;
 
@@ -34,8 +36,13 @@ const prompt = ai.definePrompt({
   input: {schema: SuggestTransactionCategoriesInputSchema},
   output: {schema: SuggestTransactionCategoriesOutputSchema},
   prompt: `Given the following transaction description, suggest up to 3 categories that would be appropriate for this transaction. Return only the names of the categories.
-
+{{#if description}}
 Description: {{{description}}}
+{{/if}}
+
+{{#if pythonMode}}
+You are in Python mode. Also provide the categories as a Python list string in the pythonCategories field.
+{{/if}}
 
 Categories:`,
 });
@@ -48,6 +55,9 @@ const suggestTransactionCategoriesFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
+    if (output && input.pythonMode) {
+      output.pythonCategories = `[${output.categories.map(c => `"${c}"`).join(', ')}]`;
+    }
     return output!;
   }
 );
