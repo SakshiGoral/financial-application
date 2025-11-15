@@ -33,6 +33,7 @@ interface DataContextType {
   addGoal: (goal: Omit<Goal, 'id' | 'currentAmount'>) => void;
   deleteGoal: (id: string) => void;
   updateGoal: (id: string, updates: Partial<Goal>) => void;
+  clearAllData: (dataType: 'transactions' | 'budgets' | 'goals') => void;
   
   // AI Actions
   askAiAssistant: (question: string) => Promise<void>;
@@ -111,6 +112,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
     );
     if(updates.currentAmount) toast({ title: "Goal progress updated!" });
   };
+
+  const clearAllData = (dataType: 'transactions' | 'budgets' | 'goals') => {
+    switch (dataType) {
+      case 'transactions':
+        setTransactions([]);
+        break;
+      case 'budgets':
+        setBudgets([]);
+        break;
+      case 'goals':
+        setGoals([]);
+        break;
+      default:
+        break;
+    }
+  };
   
   const askAiAssistant = async (question: string) => {
     setChatHistory(prev => [...prev, { role: 'user', content: question }]);
@@ -185,6 +202,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     addGoal,
     deleteGoal,
     updateGoal,
+    clearAllData,
     askAiAssistant,
     getBudgetAdvice,
     getCategorySuggestions,

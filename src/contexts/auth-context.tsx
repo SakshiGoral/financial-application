@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, ReactNode, useMemo } from 'react';
+import { createContext, useContext, ReactNode, useMemo, useCallback } from 'react';
 import useLocalStorage from '@/hooks/use-local-storage';
 import { User } from '@/lib/definitions';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,7 @@ interface AuthContextType {
   signup: (name: string, email: string, pass: string) => boolean;
   logout: () => void;
   getPassword: (email: string) => string | null;
+  updateUser: (email: string, updates: Partial<Omit<User, 'email' | 'password'>>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -64,8 +65,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/login');
     toast({ title: "You have been logged out." });
   };
+  
+  const updateUser = useCallback((email: string, updates: Partial<Omit<User, 'email' | 'password'>>) => {
+    if (users[email]) {
+      setUsers(prevUsers => ({
+        ...prevUsers,
+        [email]: { ...prevUsers[email], ...updates }
+      }));
+    }
+  }, [users, setUsers]);
 
-  const value = { user, users, login, signup, logout, getPassword };
+  const value = { user, users, login, signup, logout, getPassword, updateUser };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

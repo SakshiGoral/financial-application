@@ -2,12 +2,24 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Wallet, Target, TrendingUp, MessageCircle, LogOut, Menu, X, BarChart, Settings } from 'lucide-react';
+import { Home, Wallet, Target, TrendingUp, MessageCircle, LogOut, Menu, X, BarChart, Settings, UserCircle } from 'lucide-react';
 import { TrendingUp as Logo } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '../ui/button';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Dashboard' },
@@ -58,10 +70,24 @@ export default function Sidebar() {
                 <p className="text-xs text-muted-foreground truncate max-w-[150px]">{user?.email}</p>
             </div>
         </div>
-        <Button variant="outline" className="w-full justify-start" onClick={logout}>
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
-        </Button>
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
+                <AlertDialogDescription>You will be returned to the login page.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={logout}>Logout</AlertDialogAction>
+            </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
