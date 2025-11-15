@@ -20,7 +20,16 @@ const transactionSchema = z.object({
   amount: z.coerce.number().positive({ message: 'Amount must be positive.' }),
   description: z.string().min(3, { message: 'Description must be at least 3 characters.' }),
   category: z.string().min(1, { message: 'Please select a category.' }),
+  otherCategory: z.string().optional(),
   paymentMethod: z.string().min(1, { message: 'Please select a payment method.' }),
+}).refine(data => {
+    if (data.category === 'Other') {
+        return !!data.otherCategory && data.otherCategory.length > 0;
+    }
+    return true;
+}, {
+    message: 'Please specify the category name.',
+    path: ['otherCategory'],
 });
 
 type TransactionFormValues = z.infer<typeof transactionSchema>;
@@ -40,11 +49,13 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
       amount: undefined,
       description: '',
       category: '',
+      otherCategory: '',
       paymentMethod: '',
     },
   });
 
   const descriptionValue = form.watch('description');
+  const categoryValue = form.watch('category');
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -68,7 +79,8 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
 
   function onSubmit(data: TransactionFormValues) {
     const finalAmount = data.type === 'income' ? data.amount : -data.amount;
-    addTransaction({ ...data, amount: finalAmount });
+    const finalCategory = data.category === 'Other' ? data.otherCategory : data.category;
+    addTransaction({ ...data, amount: finalAmount, category: finalCategory });
     form.reset();
     setShowForm(false);
     setSuggestions([]);
@@ -155,6 +167,18 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
                     <FormMessage />
                   </FormItem>
                 )} />
+
+                {categoryValue === 'Other' && (
+                    <FormField control={form.control} name="otherCategory" render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Custom Category</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Enter category name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )} />
+                )}
 
                 <FormField control={form.control} name="paymentMethod" render={({ field }) => (
                     <FormItem>
