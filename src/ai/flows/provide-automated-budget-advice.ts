@@ -51,10 +51,10 @@ const prompt = ai.definePrompt({
 
   Analyze the following data to provide personalized advice on how they can improve their budget.
 
-  Transactions: {{{JSON.stringify(transactions)}}
-  Budgets: {{{JSON.stringify(budgets)}}}
-  Income: {{{income}}}
-  Balance: {{{balance}}}
+  Transactions: {{transactions}}
+  Budgets: {{budgets}}
+  Income: {{income}}
+  Balance: {{balance}}
 
   Focus on areas where they can cut costs, optimize spending, and achieve their financial goals. Suggest specific categories to look at.
   Give the response a friendly and encouraging tone.
