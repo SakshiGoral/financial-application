@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Wallet, Target, TrendingUp, MessageCircle, LogOut, Menu, X, BarChart, Settings, UserCircle } from 'lucide-react';
+import { Home, Wallet, Target, TrendingUp, LogOut, Menu, X, BarChart, Settings } from 'lucide-react';
 import { TrendingUp as Logo } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '../ui/button';
@@ -27,7 +27,6 @@ const navItems = [
   { href: '/transactions', icon: Wallet, label: 'Transactions' },
   { href: '/budgets', icon: Target, label: 'Budgets' },
   { href: '/goals', icon: TrendingUp, label: 'Goals' },
-  { href: '/assistant', icon: MessageCircle, label: 'AI Assistant' },
   { href: '/reports', icon: BarChart, label: 'Reports' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ];

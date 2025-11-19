@@ -27,8 +27,3 @@ export interface Goal {
   currentAmount: number;
   deadline: string;
 }
-
-export interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}

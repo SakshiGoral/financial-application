@@ -2,13 +2,10 @@
 
 import { createContext, useContext, useMemo, ReactNode } from 'react';
 import useLocalStorage from '@/hooks/use-local-storage';
-import { Transaction, Budget, Goal, ChatMessage, User } from '@/lib/definitions';
+import { Transaction, Budget, Goal } from '@/lib/definitions';
 import { useToast } from '@/hooks/use-toast';
 import {
-  answerFinancialQuestions,
-  provideAutomatedBudgetAdvice,
   suggestTransactionCategories,
-  textToSpeech,
 } from '@/app/actions';
 
 interface DataContextType {
@@ -16,7 +13,6 @@ interface DataContextType {
   transactions: Transaction[];
   budgets: Budget[];
   goals: Goal[];
-  chatHistory: ChatMessage[];
   
   // Stats
   stats: {
@@ -36,10 +32,7 @@ interface DataContextType {
   clearAllData: (dataType: 'transactions' | 'budgets' | 'goals') => void;
   
   // AI Actions
-  askAiAssistant: (question: string) => Promise<void>;
-  getBudgetAdvice: () => Promise<string | null>;
   getCategorySuggestions: (description: string) => Promise<string[]>;
-  getAudioForText: (text: string) => Promise<string | null>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -48,7 +41,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('transactions', []);
   const [budgets, setBudgets] = useLocalStorage<Budget[]>('budgets', []);
   const [goals, setGoals] = useLocalStorage<Goal[]>('goals', []);
-  const [chatHistory, setChatHistory] = useLocalStorage<ChatMessage[]>('chatHistory', []);
   const { toast } = useToast();
 
   const stats = useMemo(() => {
@@ -128,42 +120,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         break;
     }
   };
-  
-  const askAiAssistant = async (question: string) => {
-    setChatHistory(prev => [...prev, { role: 'user', content: question }]);
-    try {
-      const { answer } = await answerFinancialQuestions({
-        question,
-        balance: stats.balance,
-        income: stats.income,
-        expenses: Math.abs(stats.expense),
-        budgets: budgets.map(b => ({category: b.category, amount: b.amount})),
-        goals: goals.map(g => ({name: g.name, targetAmount: g.targetAmount, currentAmount: g.currentAmount})),
-      });
-      setChatHistory(prev => [...prev, { role: 'assistant', content: answer }]);
-    } catch (error) {
-      console.error(error);
-      const errorMessage = "Sorry, I couldn't process that request. Please try again.";
-      setChatHistory(prev => [...prev, { role: 'assistant', content: errorMessage }]);
-      toast({ title: "AI Error", description: "Could not get response from assistant.", variant: 'destructive' });
-    }
-  };
-
-  const getBudgetAdvice = async (): Promise<string | null> => {
-    try {
-      const { advice } = await provideAutomatedBudgetAdvice({
-        transactions: transactions.slice(-50).map(t => ({ category: t.category, amount: t.amount, description: t.description })),
-        budgets: budgets.map(b => ({ category: b.category, amount: b.amount })),
-        income: stats.income,
-        balance: stats.balance,
-      });
-      return advice;
-    } catch (error) {
-      console.error(error);
-      toast({ title: "AI Error", description: "Could not generate budget advice.", variant: 'destructive' });
-      return null;
-    }
-  };
 
   const getCategorySuggestions = async (description: string): Promise<string[]> => {
     if (!description.trim() || description.trim().length < 5) return [];
@@ -177,23 +133,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const getAudioForText = async (text: string): Promise<string | null> => {
-    try {
-        const { media } = await textToSpeech(text);
-        return media;
-    } catch(e) {
-        console.error(e);
-        toast({ title: "Audio Error", description: "Could not generate audio.", variant: 'destructive' });
-        return null;
-    }
-  }
-
-
   const value = {
     transactions,
     budgets,
     goals,
-    chatHistory,
     stats,
     addTransaction,
     deleteTransaction,
@@ -203,10 +146,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     deleteGoal,
     updateGoal,
     clearAllData,
-    askAiAssistant,
-    getBudgetAdvice,
     getCategorySuggestions,
-    getAudioForText,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
