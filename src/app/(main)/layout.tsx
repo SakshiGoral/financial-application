@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, ReactNode } from 'react';
+import { useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import Sidebar from '@/components/layout/sidebar';
@@ -10,14 +10,17 @@ import { Loader2 } from 'lucide-react';
 export default function MainLayout({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user === null) {
       router.replace('/login');
+    } else if (user) {
+      setLoading(false);
     }
   }, [user, router]);
 
-  if (!user) {
+  if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
