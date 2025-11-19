@@ -45,15 +45,23 @@ const prompt = ai.definePrompt({
   name: 'answerFinancialQuestionsPrompt',
   input: {schema: AnswerFinancialQuestionsInputSchema},
   output: {schema: AnswerFinancialQuestionsOutputSchema},
-  prompt: `You are a helpful AI assistant that answers questions about a user\'s financial situation.
+  prompt: `You are a helpful AI assistant that answers questions about a user's financial situation.
 
-  Use the following information to answer the user\'s question:
+  Use the following information to answer the user's question:
 
   Current Balance: {{balance}}
   Total Income: {{income}}
   Total Expenses: {{expenses}}
-  Budgets: {{#each budgets}}{{category}}: {{amount}} {{/each}}
-  Goals: {{#each goals}}{{name}}: Target {{targetAmount}}, Current {{currentAmount}} {{/each}}
+  
+  Budgets:
+  {{#each budgets}}
+  - {{this.category}}: {{this.amount}}
+  {{/each}}
+
+  Goals:
+  {{#each goals}}
+  - {{this.name}}: Target {{this.targetAmount}}, Current {{this.currentAmount}}
+  {{/each}}
 
   Question: {{question}}`,
 });
