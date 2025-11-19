@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Plus, Loader2 } from 'lucide-react';
@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const transactionSchema = z.object({
   type: z.enum(['income', 'expense']),
-  amount: z.coerce.number().positive({ message: 'Amount must be positive.' }),
+  amount: z.union([z.string().length(0), z.coerce.number().positive({ message: 'Amount must be positive.' })]),
   description: z.string().min(3, { message: 'Description must be at least 3 characters.' }),
   category: z.string().min(1, { message: 'Please select a category.' }),
   otherCategory: z.string().optional(),
@@ -30,6 +30,9 @@ const transactionSchema = z.object({
 }, {
     message: 'Please specify the category name.',
     path: ['otherCategory'],
+}).refine(data => data.amount !== '', {
+    message: 'Amount must be positive.',
+    path: ['amount'],
 });
 
 type TransactionFormValues = z.infer<typeof transactionSchema>;
@@ -46,7 +49,7 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
     resolver: zodResolver(transactionSchema),
     defaultValues: {
       type: 'expense',
-      amount: undefined,
+      amount: '',
       description: '',
       category: '',
       otherCategory: '',
@@ -78,7 +81,7 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
 
 
   function onSubmit(data: TransactionFormValues) {
-    const finalAmount = data.type === 'income' ? data.amount : -data.amount;
+    const finalAmount = data.type === 'income' ? Number(data.amount) : -Number(data.amount);
     const finalCategory = data.category === 'Other' ? data.otherCategory : data.category;
     addTransaction({ ...data, amount: finalAmount, category: finalCategory });
     form.reset();
