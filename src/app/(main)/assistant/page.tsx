@@ -43,9 +43,7 @@ export default function AssistantPage() {
 
       recognition.onerror = (event: any) => {
         toast({ title: 'Speech recognition error', description: event.error, variant: 'destructive' });
-        if (isRecording) {
-            stopRecording();
-        }
+        setIsRecording(false);
       };
       
       recognition.onend = () => {
@@ -54,7 +52,7 @@ export default function AssistantPage() {
 
       recognitionRef.current = recognition;
     }
-  }, [toast, isRecording]);
+  }, [toast]);
 
   const startRecording = () => {
     if (recognitionRef.current) {
