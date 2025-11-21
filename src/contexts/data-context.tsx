@@ -1,11 +1,13 @@
 'use client';
 
-import { createContext, useContext, useMemo, ReactNode } from 'react';
+import { createContext, useContext, useMemo, ReactNode, useCallback } from 'react';
 import useLocalStorage from '@/hooks/use-local-storage';
 import { Transaction, Budget, Goal } from '@/lib/definitions';
 import { useToast } from '@/hooks/use-toast';
 import {
   suggestTransactionCategories,
+  provideAutomatedBudgetAdvice,
+  answerFinancialQuestions,
 } from '@/app/actions';
 
 interface DataContextType {
@@ -33,6 +35,8 @@ interface DataContextType {
   
   // AI Actions
   getCategorySuggestions: (description: string) => Promise<string[]>;
+  getAutomatedBudgetAdvice: () => Promise<string>;
+  askFinancialQuestion: (question: string) => Promise<string>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -121,17 +125,38 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const getCategorySuggestions = async (description: string): Promise<string[]> => {
+  const getCategorySuggestions = useCallback(async (description: string): Promise<string[]> => {
     if (!description.trim() || description.trim().length < 5) return [];
     try {
       const { categories } = await suggestTransactionCategories({ description });
       return categories;
     } catch (error) {
       console.error(error);
-      // Don't show a toast for this, as it's a background helper
       return [];
     }
-  };
+  }, []);
+
+  const getAutomatedBudgetAdvice = useCallback(async (): Promise<string> => {
+    try {
+        const recentTransactions = transactions.slice(-20);
+        const { advice } = await provideAutomatedBudgetAdvice({ transactions: recentTransactions, budgets });
+        return advice;
+    } catch (error) {
+        console.error("Failed to get budget advice:", error);
+        return "I'm sorry, I couldn't generate any advice at the moment. Please try again later.";
+    }
+  }, [transactions, budgets]);
+
+  const askFinancialQuestion = useCallback(async (question: string): Promise<string> => {
+    try {
+        const { answer } = await answerFinancialQuestions({ question, transactions, budgets, goals });
+        return answer;
+    } catch (error) {
+        console.error("Failed to get answer for financial question:", error);
+        return "I'm sorry, I couldn't process your question at the moment. Please try again later.";
+    }
+  }, [transactions, budgets, goals]);
+
 
   const value = {
     transactions,
@@ -147,6 +172,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     updateGoal,
     clearAllData,
     getCategorySuggestions,
+    getAutomatedBudgetAdvice,
+    askFinancialQuestion,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
