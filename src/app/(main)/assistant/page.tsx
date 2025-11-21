@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Bot, User, Loader2, Sparkles, Mic, MicOff } from 'lucide-react';
+import { useState } from 'react';
+import { Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useData } from '@/contexts/data-context';
@@ -9,7 +9,6 @@ import Card3D from '@/components/shared/card-3d';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useToast } from '@/hooks/use-toast';
 
 
 interface Message {
@@ -21,56 +20,7 @@ export default function AssistantPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const { askFinancialQuestion } = useData();
-  const { toast } = useToast();
-
-  const recognitionRef = useRef<any>(null);
-
-  useEffect(() => {
-    // Check for SpeechRecognition API
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setInput(transcript);
-      };
-
-      recognition.onerror = (event: any) => {
-        if (event.error !== 'no-speech') {
-            toast({ title: 'Speech recognition error', description: event.error, variant: 'destructive' });
-        }
-        setIsRecording(false);
-      };
-      
-      recognition.onend = () => {
-        setIsRecording(false);
-      };
-
-      recognitionRef.current = recognition;
-    }
-  }, [toast]);
-
-  const startRecording = () => {
-    if (recognitionRef.current) {
-      setIsRecording(true);
-      recognitionRef.current.start();
-    } else {
-      toast({ title: 'Speech recognition not supported', description: 'Your browser does not support the Web Speech API.', variant: 'destructive'});
-    }
-  };
-
-  const stopRecording = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsRecording(false);
-    }
-  };
 
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -167,15 +117,6 @@ export default function AssistantPage() {
               placeholder="e.g., How much did I spend on shopping this month?"
               disabled={isLoading}
             />
-             <Button
-              type="button"
-              variant={isRecording ? "destructive" : "outline"}
-              size="icon"
-              onClick={isRecording ? stopRecording : startRecording}
-              disabled={isLoading}
-            >
-              {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-            </Button>
             <Button type="submit" disabled={isLoading || !input.trim()} className="font-bold">
               Send
             </Button>
