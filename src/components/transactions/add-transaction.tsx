@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -11,13 +11,12 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { CATEGORIES } from '@/lib/constants';
-import { useData } from '@/contexts/data-context';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 const transactionSchema = z.object({
   type: z.enum(['income', 'expense']),
-  amount: z.union([z.string().length(0), z.coerce.number().positive({ message: 'Amount must be positive.' })]),
+  amount: z.coerce.number().positive({ message: 'Amount must be positive.' }),
   description: z.string().min(3, { message: 'Description must be at least 3 characters.' }),
   category: z.string().min(1, { message: 'Please select a category.' }),
   otherCategory: z.string().optional(),
@@ -30,9 +29,6 @@ const transactionSchema = z.object({
 }, {
     message: 'Please specify the category name.',
     path: ['otherCategory'],
-}).refine(data => data.amount !== '', {
-    message: 'Amount must be positive.',
-    path: ['amount'],
 });
 
 type TransactionFormValues = z.infer<typeof transactionSchema>;
@@ -41,15 +37,13 @@ const paymentMethods = ['Cash', 'Credit Card', 'Debit Card', 'Online Transfer', 
 
 export default function AddTransaction({ addTransaction }: { addTransaction: (data: any) => void }) {
   const [showForm, setShowForm] = useState(false);
-  const { getCategorySuggestions } = useData();
-  const [suggestions, setSuggestions] = useState<string[]>([]);
   const { toast } = useToast();
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
     defaultValues: {
       type: 'expense',
-      amount: '',
+      amount: undefined,
       description: '',
       category: '',
       otherCategory: '',
@@ -57,27 +51,7 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
     },
   });
 
-  const descriptionValue = form.watch('description');
   const categoryValue = form.watch('category');
-
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (descriptionValue && descriptionValue.length > 5) {
-        const result = await getCategorySuggestions(descriptionValue);
-        setSuggestions(result);
-      } else {
-        setSuggestions([]);
-      }
-    };
-
-    const handler = setTimeout(() => {
-        fetchSuggestions();
-    }, 500);
-
-    return () => {
-        clearTimeout(handler);
-    }
-  }, [descriptionValue, getCategorySuggestions]);
 
 
   function onSubmit(data: TransactionFormValues) {
@@ -86,7 +60,6 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
     addTransaction({ ...data, amount: finalAmount, category: finalCategory });
     form.reset();
     setShowForm(false);
-    setSuggestions([]);
   }
 
   return (
@@ -202,19 +175,6 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
                     </FormItem>
                 )} />
               </div>
-
-              {suggestions.length > 0 && (
-                <div>
-                    <FormLabel className="text-sm">Category Suggestions</FormLabel>
-                    <div className="flex flex-wrap gap-2 pt-2">
-                        {suggestions.map(s => (
-                            <Button key={s} type="button" variant="outline" size="sm" onClick={() => form.setValue('category', s)}>
-                                {s}
-                            </Button>
-                        ))}
-                    </div>
-                </div>
-              )}
 
               <Button type="submit" disabled={form.formState.isSubmitting} className="w-full font-bold">
                 {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
