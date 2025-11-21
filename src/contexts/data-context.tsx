@@ -8,6 +8,7 @@ import {
   suggestTransactionCategories,
   provideAutomatedBudgetAdvice,
   answerFinancialQuestions,
+  textToSpeech,
 } from '@/app/actions';
 
 interface DataContextType {
@@ -37,6 +38,7 @@ interface DataContextType {
   getCategorySuggestions: (description: string) => Promise<string[]>;
   getAutomatedBudgetAdvice: () => Promise<string>;
   askFinancialQuestion: (question: string) => Promise<string>;
+  textToSpeech: (text: string) => Promise<{ media: string }>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -156,8 +158,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         return "I'm sorry, I couldn't process your question at the moment. Please try again later.";
     }
   }, [transactions, budgets, goals]);
-
-
+  
   const value = {
     transactions,
     budgets,
@@ -174,6 +175,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     getCategorySuggestions,
     getAutomatedBudgetAdvice,
     askFinancialQuestion,
+    textToSpeech,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

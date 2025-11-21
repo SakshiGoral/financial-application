@@ -9,6 +9,9 @@ import {
 import {
   answerFinancialQuestions as answerFinancialQuestionsFlow,
 } from '@/ai/flows/answer-financial-questions';
+import {
+    textToSpeech as textToSpeechFlow,
+} from '@/ai/flows/text-to-speech';
 
 import type {
   SuggestTransactionCategoriesInput,
@@ -35,4 +38,8 @@ export async function answerFinancialQuestions(
   input: AnswerFinancialQuestionsInput
 ): Promise<AnswerFinancialQuestionsOutput> {
   return await answerFinancialQuestionsFlow(input);
+}
+
+export async function textToSpeech(text: string): Promise<{ media: string }> {
+    return await textToSpeechFlow(text);
 }
