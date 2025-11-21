@@ -42,7 +42,9 @@ export default function AssistantPage() {
       };
 
       recognition.onerror = (event: any) => {
-        toast({ title: 'Speech recognition error', description: event.error, variant: 'destructive' });
+        if (event.error !== 'no-speech') {
+            toast({ title: 'Speech recognition error', description: event.error, variant: 'destructive' });
+        }
         setIsRecording(false);
       };
       
