@@ -43,7 +43,7 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
     resolver: zodResolver(transactionSchema),
     defaultValues: {
       type: 'expense',
-      amount: undefined,
+      amount: '' as any,
       description: '',
       category: '',
       otherCategory: '',
@@ -52,7 +52,6 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
   });
 
   const categoryValue = form.watch('category');
-
 
   function onSubmit(data: TransactionFormValues) {
     const finalAmount = data.type === 'income' ? Number(data.amount) : -Number(data.amount);
@@ -125,8 +124,10 @@ export default function AddTransaction({ addTransaction }: { addTransaction: (da
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={form.control} name="category" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormLabel className="flex items-center">
+                      Category
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />

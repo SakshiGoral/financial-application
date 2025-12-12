@@ -1,15 +1,26 @@
 'use client';
 
-import { createContext, useContext, useMemo, ReactNode } from 'react';
+import { createContext, useContext, useMemo, ReactNode, useState, useEffect, useCallback } from 'react';
 import useLocalStorage from '@/hooks/use-local-storage';
 import { Transaction, Budget, Goal } from '@/lib/definitions';
 import { useToast } from '@/hooks/use-toast';
+import { CATEGORIES } from '@/lib/constants';
+
+interface FinancialInsights {
+  weeklySpendingSummary: string;
+  moneyLeaks: string;
+  unusualSpending: string;
+  predictedExpenses: string;
+  moneyHealthScore: number;
+}
 
 interface DataContextType {
   // State
   transactions: Transaction[];
   budgets: Budget[];
   goals: Goal[];
+  financialInsights: FinancialInsights | null;
+  loadingInsights: boolean;
   
   // Stats
   stats: {
@@ -27,6 +38,8 @@ interface DataContextType {
   deleteGoal: (id: string) => void;
   updateGoal: (id: string, updates: Partial<Goal>) => void;
   clearAllData: (dataType: 'transactions' | 'budgets' | 'goals') => void;
+  suggestCategory: (description: string) => Promise<string | undefined>;
+  loadingSuggestion: boolean;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -36,6 +49,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [budgets, setBudgets] = useLocalStorage<Budget[]>('budgets', []);
   const [goals, setGoals] = useLocalStorage<Goal[]>('goals', []);
   const { toast } = useToast();
+
+  const [financialInsights, setFinancialInsights] = useState<FinancialInsights | null>(null);
+  const [loadingInsights, setLoadingInsights] = useState(false);
+  const [loadingSuggestion, setLoadingSuggestion] = useState(false);
 
   const stats = useMemo(() => {
     const income = transactions
@@ -50,7 +67,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       balance: income + expense,
     };
   }, [transactions]);
-
+  
   const addTransaction = (tx: Omit<Transaction, 'id' | 'timestamp'>) => {
     const newTransaction: Transaction = {
       ...tx,
@@ -114,12 +131,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
         break;
     }
   };
+
+  const suggestCategory = async (description: string): Promise<string | undefined> => {
+    // This functionality is temporarily disabled.
+    return undefined;
+  };
   
   const value = {
     transactions,
     budgets,
     goals,
     stats,
+    financialInsights,
+    loadingInsights,
     addTransaction,
     deleteTransaction,
     addBudget,
@@ -128,6 +152,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     deleteGoal,
     updateGoal,
     clearAllData,
+    suggestCategory,
+    loadingSuggestion,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
