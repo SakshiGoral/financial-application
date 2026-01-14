@@ -31,7 +31,7 @@ export default function AddBudget({ addBudget, existingCategories }: AddBudgetPr
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetSchema),
     defaultValues: {
-      amount: undefined,
+      amount: '' as any,
       category: '',
     },
   });

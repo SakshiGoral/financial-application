@@ -25,7 +25,7 @@ export default function AddGoal({ addGoal }: { addGoal: (data: GoalFormValues) =
     resolver: zodResolver(goalSchema),
     defaultValues: {
       name: '',
-      targetAmount: undefined,
+      targetAmount: '' as any,
       deadline: '',
     },
   });
