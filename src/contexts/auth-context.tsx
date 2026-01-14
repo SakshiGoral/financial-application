@@ -13,7 +13,7 @@ interface AuthContextType {
   signup: (name: string, email: string, pass: string) => boolean;
   logout: () => void;
   getPassword: (email: string) => string | null;
-  updateUser: (email: string, updates: Partial<Omit<User, 'email' | 'password'>>) => void;
+  updateUser: (currentEmail: string, updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -66,14 +66,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     toast({ title: "You have been logged out." });
   };
   
-  const updateUser = useCallback((email: string, updates: Partial<Omit<User, 'email' | 'password'>>) => {
-    if (users[email]) {
-      setUsers(prevUsers => ({
-        ...prevUsers,
-        [email]: { ...prevUsers[email], ...updates }
-      }));
-    }
-  }, [users, setUsers]);
+  const updateUser = useCallback((currentEmail: string, updates: Partial<User>) => {
+    setUsers(prevUsers => {
+      const newUsers = { ...prevUsers };
+      const userToUpdate = newUsers[currentEmail];
+
+      if (userToUpdate) {
+        // If email is being changed, we need to move the user record
+        if (updates.email && updates.email !== currentEmail) {
+          if (newUsers[updates.email]) {
+            toast({ title: 'Error', description: 'This email is already taken.', variant: 'destructive'});
+            return prevUsers; // Return original state if new email is taken
+          }
+          // Create new entry and delete old one
+          newUsers[updates.email] = { ...userToUpdate, ...updates };
+          delete newUsers[currentEmail];
+          setCurrentUserEmail(updates.email); // Update current user session
+        } else {
+          // Just update the user in place
+          newUsers[currentEmail] = { ...userToUpdate, ...updates };
+        }
+      }
+      return newUsers;
+    });
+  }, [setUsers, setCurrentUserEmail, toast]);
 
   const value = { user, users, login, signup, logout, getPassword, updateUser };
 

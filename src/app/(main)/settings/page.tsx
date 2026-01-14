@@ -24,11 +24,11 @@ import { UserCircle, Trash2, Loader2, Palette, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTheme } from '@/contexts/theme-context';
-import { Switch } from '@/components/ui/switch';
 import { useRef } from 'react';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
   avatar: z.string().optional(),
 });
 
@@ -45,13 +45,14 @@ export default function SettingsPage() {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: user?.name || '',
+      email: user?.email || '',
       avatar: user?.avatar || '',
     },
   });
 
   function onProfileSubmit(data: ProfileFormValues) {
     if (user?.email) {
-      updateUser(user.email, { name: data.name, avatar: data.avatar });
+      updateUser(user.email, { name: data.name, email: data.email, avatar: data.avatar });
       toast({ title: 'Profile updated successfully!' });
     }
   }
@@ -127,10 +128,19 @@ export default function SettingsPage() {
                       </FormItem>
                     )}
                   />
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <Input type="email" value={user?.email || ''} disabled className="flex-1" />
-                  </FormItem>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="your@email.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
 
