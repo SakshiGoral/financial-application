@@ -20,15 +20,16 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import Card3D from '@/components/shared/card-3d';
-import { UserCircle, Trash2, Loader2, Palette } from 'lucide-react';
+import { UserCircle, Trash2, Loader2, Palette, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTheme } from '@/contexts/theme-context';
 import { Switch } from '@/components/ui/switch';
+import { useRef } from 'react';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
-  avatar: z.string().url({ message: 'Please enter a valid URL.' }).optional().or(z.literal('')),
+  avatar: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -38,6 +39,7 @@ export default function SettingsPage() {
   const { clearAllData } = useData();
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -54,6 +56,18 @@ export default function SettingsPage() {
     }
   }
 
+  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        form.setValue('avatar', base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleClearData = (dataType: 'transactions' | 'budgets' | 'goals') => {
     clearAllData(dataType);
     toast({ title: `${dataType.charAt(0).toUpperCase() + dataType.slice(1)} cleared!`, variant: 'destructive'});
@@ -69,14 +83,37 @@ export default function SettingsPage() {
           </h3>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onProfileSubmit)} className="space-y-6">
-              <div className="flex items-center gap-6">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={form.watch('avatar') || user?.avatar} alt={user?.name} />
-                  <AvatarFallback className="text-3xl">
-                    {user?.name?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 space-y-4">
+              <div className="flex flex-col items-center gap-6 sm:flex-row">
+                <div className='relative'>
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={form.watch('avatar') || user?.avatar} alt={user?.name} />
+                    <AvatarFallback className="text-3xl">
+                      {user?.name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button type="button" size="icon" className="absolute bottom-0 right-0 rounded-full h-8 w-8" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="h-4 w-4" />
+                  </Button>
+                  <FormField
+                    control={form.control}
+                    name="avatar"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input 
+                            type="file" 
+                            className="hidden" 
+                            ref={fileInputRef}
+                            accept="image/png, image/jpeg, image/gif"
+                            onChange={handleAvatarUpload} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="flex-1 w-full space-y-4">
                   <FormField
                     control={form.control}
                     name="name"
@@ -90,25 +127,15 @@ export default function SettingsPage() {
                       </FormItem>
                     )}
                   />
-                   <FormField
-                    control={form.control}
-                    name="avatar"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Avatar URL</FormLabel>
-                        <FormControl>
-                          <Input placeholder="https://example.com/avatar.png" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <Input type="email" value={user?.email || ''} disabled className="flex-1" />
+                  </FormItem>
                 </div>
               </div>
 
                <div className="flex items-center gap-4">
-                <Input type="email" value={user?.email || ''} disabled className="flex-1" />
-                <Button type="submit" disabled={form.formState.isSubmitting} className="font-bold">
+                <Button type="submit" disabled={form.formState.isSubmitting} className="w-full font-bold">
                     {form.formState.isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
                 </Button>
                </div>
